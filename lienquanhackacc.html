@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Account Manager</title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            padding: 15px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 4px 0;
+        }
+
+        button {
+            padding: 8px;
+            margin-top: 4px;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            margin-top: 15px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .ok {
+            color: green;
+            font-weight: bold;
+        }
+
+        .no {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Game Accounts</h2>
+
+    <input id="user" placeholder="Tài khoản">
+    <input id="pass" placeholder="Mật khẩu">
+    <input id="note" placeholder="Ghi chú">
+
+    <label>Ngày</label>
+    <input id="date" type="date">
+
+    <label>Giờ</label>
+    <input id="clock" type="time">
+
+    <button onclick="addAccount()">Thêm tài khoản</button>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tài khoản</th>
+                <th>Mật khẩu</th>
+                <th>Ghi chú</th>
+                <th>Trạng thái</th>
+                <th>Sửa</th>
+                <th>Xóa</th>
+            </tr>
+        </thead>
+
+        <tbody id="list"></tbody>
+
+    </table>
+
+    <script>
+
+        let accounts = JSON.parse(localStorage.getItem("accounts") || "[]")
+
+        function save(){
+        localStorage.setItem("accounts", JSON.stringify(accounts))
+        }
+
+        function getStatus(time){
+
+        if(!time) return "OK"
+
+        let now = new Date()
+        let t = new Date(time)
+
+        if(now < t){
+        return "NO"
+        }else{
+        return "OK"
+        }
+
+        }
+
+        function render(){
+
+        let list=document.getElementById("list")
+
+        list.innerHTML=""
+
+        accounts.forEach((a,i)=>{
+
+        let status=getStatus(a.time)
+
+        list.innerHTML+=`
+
+        <tr>
+
+        <td>${i+1}</td>
+
+        <td>${a.user}</td>
+
+        <td>${a.pass}</td>
+
+        <td>${a.note}</td>
+
+        <td class="${status=="OK"?"ok":"no"}">${status}</td>
+
+        <td><button onclick="editAccount(${i})">Sửa</button></td>
+
+        <td><button onclick="deleteAccount(${i})">X</button></td>
+
+        </tr>
+
+        `
+
+        })
+
+        }
+
+        function addAccount(){
+
+        let user=document.getElementById("user").value
+        let pass=document.getElementById("pass").value
+        let note=document.getElementById("note").value
+
+        let d=document.getElementById("date").value
+        let c=document.getElementById("clock").value
+
+        let time=""
+
+        if(d && c){
+        time=d+"T"+c
+        }
+
+        if(user==""){
+        alert("Nhập tài khoản")
+        return
+        }
+
+        accounts.push({user,pass,note,time})
+
+        save()
+        render()
+
+        document.getElementById("user").value=""
+        document.getElementById("pass").value=""
+        document.getElementById("note").value=""
+        document.getElementById("date").value=""
+        document.getElementById("clock").value=""
+
+        }
+
+        function editAccount(i){
+
+        let a=accounts[i]
+
+        document.getElementById("user").value=a.user
+        document.getElementById("pass").value=a.pass
+        document.getElementById("note").value=a.note
+
+        if(a.time){
+        let t=a.time.split("T")
+        document.getElementById("date").value=t[0]
+        document.getElementById("clock").value=t[1]
+        }
+
+        accounts.splice(i,1)
+
+        save()
+        render()
+
+        }
+
+        function deleteAccount(i){
+
+        if(confirm("Xóa tài khoản này?")){
+
+        accounts.splice(i,1)
+
+        save()
+        render()
+
+        }
+
+        }
+
+        render()
+
+    </script>
+
+</body>
+</html>
